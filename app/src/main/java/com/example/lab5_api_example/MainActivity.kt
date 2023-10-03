@@ -1,6 +1,7 @@
 package com.example.lab5_api_example
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -40,8 +41,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
-
+const val BASE_URL = "https://official-joke-api.appspot.com/"
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +55,7 @@ class MainActivity : ComponentActivity() {
             mainScreenLayout()
         }
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -160,6 +167,10 @@ fun mainScreenLayout(){
                 when (selectedItem) {
                     "General" -> {
                         jokeText = "Prueba gen"
+                        getAPIRandomJoke(jokeText) { result ->
+                            jokeText = result
+                        }
+
                         isVisible = false
 
                     }
@@ -211,6 +222,33 @@ fun ScrollableJoke(jokeText: String) {
                 .padding(20.dp)
         )
     }
+}
+
+private fun getAPIRandomJoke(jokeTxt: String, onSuccess: (String) -> Unit){
+    val retrofitBuilder = Retrofit.Builder()
+        .addConverterFactory(GsonConverterFactory.create())
+        .baseUrl(BASE_URL)
+        .build()
+        .create(ApiInterface::class.java)
+    val retrofitData = retrofitBuilder.getRandomJoke()
+
+    retrofitData.enqueue(object : Callback<Joke> {
+        override fun onResponse(call: Call<Joke>, response: Response<Joke>) {
+            val myData = response.body()
+
+            if (myData != null) {
+                val result = myData.setup + "\n" + myData.punchline
+                onSuccess(result)
+            }
+            else{
+                onSuccess("Response was null")
+            }
+        }
+
+        override fun onFailure(call: Call<Joke>, t: Throwable) {
+            Log.d("MainActivity", "onFailure" + t.message)
+        }
+    })
 }
 
 @Preview(showBackground = true)
