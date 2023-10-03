@@ -1,5 +1,6 @@
 package com.example.lab5_api_example
 
+import ApiInterface
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -165,7 +166,7 @@ fun mainScreenLayout(){
                 when (selectedItem) {
                     "General" -> {
                         jokeText = "Cargando"
-                        getAPIRandomJoke(1,jokeText) { result ->
+                        getAPIRandomJoke(0, 1) { result ->
                             jokeText = result
                         }
 
@@ -175,7 +176,7 @@ fun mainScreenLayout(){
                     "Programacion" -> {
                         jokeText = "Cargando"
 
-                        getAPIRandomJoke(2,jokeText) { result ->
+                        getAPIRandomJoke(0, 2) { result ->
                             jokeText = result
                         }
 
@@ -183,13 +184,13 @@ fun mainScreenLayout(){
                     }
                     "Random" -> {
                         jokeText = "Cargando"
-                        getAPIRandomJoke(3,jokeText) { result ->
+                        getAPIRandomJoke(0, 3) { result ->
                             jokeText = result
                         }
                         isVisible = false
                     }
                     "ID" -> {
-                        getAPIRandomJoke(4,jokeText) { result ->
+                        getAPIRandomJoke(jokeID.toInt(),4) { result ->
                             jokeText = result
                         }
                         jokeText = "Cargando"
@@ -234,30 +235,20 @@ fun ScrollableJoke(jokeText: String) {
     }
 }
 
-private fun getAPIRandomJoke(jokeType: Int, jokeTxt: String, onSuccess: (String) -> Unit){
+private fun getAPIRandomJoke(id: Int, jokeType: Int, onSuccess: (String) -> Unit){
     val retrofitBuilder = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
         .baseUrl(BASE_URL)
         .build()
         .create(ApiInterface::class.java)
-    var retrofitData = retrofitBuilder.getRandomJoke()
 
-    when (jokeType) {
-        1 -> {
-            retrofitData = retrofitBuilder.getRandomJoke()
-        }
-        2 -> {
-            retrofitData = retrofitBuilder.getRandomCSJoke()
-        }
-        3 -> {
-            retrofitData = retrofitBuilder.getRandomJoke()
-
-        }
-        4 -> {
-            retrofitData = retrofitBuilder.getRandomJoke()
-        }
+    val retrofitData: Call<Joke> = when (jokeType) {
+        1 -> retrofitBuilder.getRandomGeneralJoke()
+        2 -> retrofitBuilder.getRandomProgrammingJoke()
+        3 -> retrofitBuilder.getRandomJoke()
+        4 -> retrofitBuilder.getJokeByID(id)
+        else -> retrofitBuilder.getRandomJoke() // Default to getRandomJoke
     }
-
 
     retrofitData.enqueue(object : Callback<Joke> {
         override fun onResponse(call: Call<Joke>, response: Response<Joke>) {
@@ -266,8 +257,7 @@ private fun getAPIRandomJoke(jokeType: Int, jokeTxt: String, onSuccess: (String)
             if (myData != null) {
                 val result = myData.setup + "\n" + "\n" + myData.punchline
                 onSuccess(result)
-            }
-            else{
+            } else {
                 onSuccess("Response was null")
             }
         }
@@ -277,6 +267,7 @@ private fun getAPIRandomJoke(jokeType: Int, jokeTxt: String, onSuccess: (String)
         }
     })
 }
+
 
 @Preview(showBackground = true)
 @Composable
