@@ -21,8 +21,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -166,8 +164,8 @@ fun mainScreenLayout(){
             onClick = {
                 when (selectedItem) {
                     "General" -> {
-                        jokeText = "Prueba gen"
-                        getAPIRandomJoke(jokeText) { result ->
+                        jokeText = "Cargando"
+                        getAPIRandomJoke(1,jokeText) { result ->
                             jokeText = result
                         }
 
@@ -175,15 +173,26 @@ fun mainScreenLayout(){
 
                     }
                     "Programacion" -> {
-                        jokeText = "Prueba progra"
+                        jokeText = "Cargando"
+
+                        getAPIRandomJoke(2,jokeText) { result ->
+                            jokeText = result
+                        }
+
                         isVisible = false
                     }
                     "Random" -> {
-                        jokeText = "Prueba rand"
+                        jokeText = "Cargando"
+                        getAPIRandomJoke(3,jokeText) { result ->
+                            jokeText = result
+                        }
                         isVisible = false
                     }
                     "ID" -> {
-                        jokeText = "ID"
+                        getAPIRandomJoke(4,jokeText) { result ->
+                            jokeText = result
+                        }
+                        jokeText = "Cargando"
                         isVisible = true
                     }
                 }
@@ -216,28 +225,46 @@ fun ScrollableJoke(jokeText: String) {
         Text(
             text = jokeText,
             color = Color.White,
-            fontSize = 15.sp,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
             modifier = Modifier
                 .padding(20.dp)
         )
     }
 }
 
-private fun getAPIRandomJoke(jokeTxt: String, onSuccess: (String) -> Unit){
+private fun getAPIRandomJoke(jokeType: Int, jokeTxt: String, onSuccess: (String) -> Unit){
     val retrofitBuilder = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
         .baseUrl(BASE_URL)
         .build()
         .create(ApiInterface::class.java)
-    val retrofitData = retrofitBuilder.getRandomJoke()
+    var retrofitData = retrofitBuilder.getRandomJoke()
+
+    when (jokeType) {
+        1 -> {
+            retrofitData = retrofitBuilder.getRandomJoke()
+        }
+        2 -> {
+            retrofitData = retrofitBuilder.getRandomCSJoke()
+        }
+        3 -> {
+            retrofitData = retrofitBuilder.getRandomJoke()
+
+        }
+        4 -> {
+            retrofitData = retrofitBuilder.getRandomJoke()
+        }
+    }
+
 
     retrofitData.enqueue(object : Callback<Joke> {
         override fun onResponse(call: Call<Joke>, response: Response<Joke>) {
             val myData = response.body()
 
             if (myData != null) {
-                val result = myData.setup + "\n" + myData.punchline
+                val result = myData.setup + "\n" + "\n" + myData.punchline
                 onSuccess(result)
             }
             else{
