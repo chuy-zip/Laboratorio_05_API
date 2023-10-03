@@ -9,10 +9,10 @@ interface ApiInterface {
     fun getRandomJoke(): Call<Joke>
 
     @GET("jokes/programming/random")
-    fun getRandomProgrammingJoke(): Call<Joke>
+    fun getRandomProgrammingJoke(): Call<List<Joke>>
 
     @GET("jokes/general/random")
-    fun getRandomGeneralJoke(): Call<Joke>
+    fun getRandomGeneralJoke(): Call<List<Joke>>
 
     @GET("jokes/{id}")
     fun getJokeByID(@Path("id") id: Int): Call<Joke>

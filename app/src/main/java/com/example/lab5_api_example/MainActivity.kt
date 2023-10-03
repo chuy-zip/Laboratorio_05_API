@@ -166,7 +166,7 @@ fun mainScreenLayout(){
                 when (selectedItem) {
                     "General" -> {
                         jokeText = "Cargando"
-                        getAPIRandomJoke(0, 1) { result ->
+                        getAPIJoke(0, 1) { result ->
                             jokeText = result
                         }
 
@@ -176,21 +176,20 @@ fun mainScreenLayout(){
                     "Programacion" -> {
                         jokeText = "Cargando"
 
-                        getAPIRandomJoke(0, 2) { result ->
+                        getAPIJokeByType(2) { result ->
                             jokeText = result
                         }
 
                         isVisible = false
                     }
                     "Random" -> {
-                        jokeText = "Cargando"
-                        getAPIRandomJoke(0, 3) { result ->
+                        getAPIJokeByType(3) { result ->
                             jokeText = result
                         }
                         isVisible = false
                     }
                     "ID" -> {
-                        getAPIRandomJoke(jokeID.toInt(),4) { result ->
+                        getAPIJoke(jokeID.toInt(),4) { result ->
                             jokeText = result
                         }
                         jokeText = "Cargando"
@@ -235,7 +234,7 @@ fun ScrollableJoke(jokeText: String) {
     }
 }
 
-private fun getAPIRandomJoke(id: Int, jokeType: Int, onSuccess: (String) -> Unit){
+private fun getAPIJoke(id: Int, jokeType: Int, onSuccess: (String) -> Unit){
     val retrofitBuilder = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
         .baseUrl(BASE_URL)
@@ -243,8 +242,6 @@ private fun getAPIRandomJoke(id: Int, jokeType: Int, onSuccess: (String) -> Unit
         .create(ApiInterface::class.java)
 
     val retrofitData: Call<Joke> = when (jokeType) {
-        1 -> retrofitBuilder.getRandomGeneralJoke()
-        2 -> retrofitBuilder.getRandomProgrammingJoke()
         3 -> retrofitBuilder.getRandomJoke()
         4 -> retrofitBuilder.getJokeByID(id)
         else -> retrofitBuilder.getRandomJoke() // Default to getRandomJoke
@@ -255,7 +252,7 @@ private fun getAPIRandomJoke(id: Int, jokeType: Int, onSuccess: (String) -> Unit
             val myData = response.body()
 
             if (myData != null) {
-                val result = myData.setup + "\n" + "\n" + myData.punchline
+                val result = myData.setup + "\n" + "\n" + myData.punchline + "\n" + "\n" + "Tipo: " + myData.type + "\n" + "\n" +  "ID: " + myData.id
                 onSuccess(result)
             } else {
                 onSuccess("Response was null")
@@ -263,6 +260,42 @@ private fun getAPIRandomJoke(id: Int, jokeType: Int, onSuccess: (String) -> Unit
         }
 
         override fun onFailure(call: Call<Joke>, t: Throwable) {
+            Log.d("MainActivity", "onFailure" + t.message)
+        }
+    })
+}
+
+private fun getAPIJokeByType(jokeType: Int, onSuccess: (String) -> Unit){
+    val retrofitBuilder = Retrofit.Builder()
+        .addConverterFactory(GsonConverterFactory.create())
+        .baseUrl(BASE_URL)
+        .build()
+        .create(ApiInterface::class.java)
+
+    val retrofitData: Call<List<Joke>> = when (jokeType) {
+        1 -> retrofitBuilder.getRandomGeneralJoke()
+        2 -> retrofitBuilder.getRandomProgrammingJoke()
+        else -> {
+            retrofitBuilder.getRandomGeneralJoke()
+        }
+    }
+
+    retrofitData.enqueue(object : Callback<List<Joke>> {
+        override fun onResponse(call: Call<List<Joke>>, response: Response<List<Joke>>) {
+            val myDataList = response.body()
+
+            if (myDataList != null && myDataList.isNotEmpty()) {
+                // Check if the response is an array
+                val myData = myDataList[0]
+
+                val result = myData.setup + "\n" + "\n" + myData.punchline + "\n" + "\n" + "Tipo: " + myData.type +  "\n" + "\n" + "ID: " + myData.id
+                onSuccess(result)
+            } else {
+                onSuccess("Response was null or empty")
+            }
+        }
+
+        override fun onFailure(call: Call<List<Joke>>, t: Throwable) {
             Log.d("MainActivity", "onFailure" + t.message)
         }
     })
