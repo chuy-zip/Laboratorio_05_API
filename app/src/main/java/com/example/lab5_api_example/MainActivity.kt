@@ -63,11 +63,11 @@ fun mainScreenLayout(){
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(android.graphics.Color.parseColor("#01377d"))),
+            .background(Color(android.graphics.Color.parseColor("#d9d9d9"))),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceAround
     ){
-        var selectedItem by remember { mutableStateOf("General") }
+        var selectedItem by remember { mutableStateOf("Elige una categoría") }
         var isMenuExpanded by remember { mutableStateOf(false) }
         var jokeText by remember { mutableStateOf(":)") }
         var jokeID by rememberSaveable { mutableStateOf("1")}
@@ -76,7 +76,7 @@ fun mainScreenLayout(){
 
         Text(
             text = "Bienvenido \nElige una categoría para generar un chiste al presionar el botón",
-            color = Color.White,
+            color = Color.Black,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -94,7 +94,7 @@ fun mainScreenLayout(){
                     .width(220.dp)
                     .height(50.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF69A0CC),
+                    containerColor = Color(0xFF284B63),
 
                     )
             )
@@ -160,7 +160,7 @@ fun mainScreenLayout(){
                 .width(220.dp)
                 .height(50.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF69A0CC)
+                containerColor = Color(0xFF284B63)
             ),
             onClick = {
                 when (selectedItem) {
@@ -216,11 +216,13 @@ fun ScrollableJoke(jokeText: String) {
             .width(280.dp)
             .verticalScroll(state = scrollState)
             .background(
-                Color(0xFF69A0CC),
+                Color(0xFF284B63),
                 shape = RoundedCornerShape(20.dp)
             ) // Set the background color of the column
             .clip(shape = RoundedCornerShape(20.dp)),
                 horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+
     ) {
         Text(
             text = jokeText,
